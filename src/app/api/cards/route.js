@@ -7,7 +7,15 @@ export async function POST(req) {
     await connectDB();
     const body = await req.json();
 
-    // Create new card
+    // Validate required fields
+    const requiredFields = ["fullName", "address", "email", "phone", "cardNumber", "cvv", "issueDate", "expiryDate"];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json({ error: `${field} is required` }, { status: 400 });
+      }
+    }
+
+    // Save new card
     const newCard = new Card(body);
     await newCard.save();
 
@@ -16,7 +24,8 @@ export async function POST(req) {
       { status: 201 }
     );
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Error adding card:", error.message); // Log for debugging
+    return NextResponse.json({ error: "Server error, try again later" }, { status: 500 });
   }
 }
 
@@ -26,6 +35,7 @@ export async function GET() {
     const cards = await Card.find();
     return NextResponse.json(cards, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Error fetching cards:", error.message); // Log for debugging
+    return NextResponse.json({ error: "Server error, try again later" }, { status: 500 });
   }
 }
